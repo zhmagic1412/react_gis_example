@@ -39,10 +39,18 @@ declare module "leaflet-types"{
         iconUrl:string
     }
 
-    export interface ILeafletVTLayerOptions extends ILayerOptions {
+    export interface ILeafletMVTLayerOptions extends ILayerOptions {
         vectorTileLayerStyles: Record<string, any>,
         url: string,
         layerName?: string
+    }
+
+    export interface ILeafletJsonVTLayerOptions extends ILayerOptions {
+        json:Record<string, any>,
+        fillColor:string,
+        color: string,
+        fillOpacity: number
+
     }
 }
 

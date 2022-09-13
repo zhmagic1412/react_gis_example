@@ -21,10 +21,19 @@
         margin-left: 20px;
       }
     }
+    .ant-spin-nested-loading{
+      height: calc(100% - 60px);
+      .ant-spin{
+        max-height: inherit;
+      }
+      .ant-spin-container{
+        height: 100%;
+      }
+    }
     .app-map-container {
       width: 100%;
-      height: calc(100% - 60px);
-
+      //height: calc(100% - 60px);
+      height: 100%;
     }
   }
 }

@@ -6,14 +6,19 @@ import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import "leaflet/dist/leaflet.css"
-import {ILeafletWMSLayerOptions, ILeafletVTLayerOptions, ILeafletMakerLayerOptions} from "leaflet-types";
+import './leaflet-geojson-vt.js'
+import {
+    ILeafletWMSLayerOptions,
+    ILeafletMakerLayerOptions,
+    ILeafletMVTLayerOptions, ILeafletJsonVTLayerOptions
+} from "leaflet-types";
 import axios from "axios";
 
 export class LeafletWrapper extends EventEmitter {
     public _map: Map | null
     private readonly _divId: string
-    private _drawLayer: Record<string, any>
-    private _layerMap: Record<string, any>
+    public _drawLayer: Record<string, any>
+    private readonly _layerMap: Record<string, any>
 
     constructor(divId: string) {
         super();
@@ -38,11 +43,27 @@ export class LeafletWrapper extends EventEmitter {
         })
         L.tileLayer.chinaProvider('Geoq.Normal.PurplishBlue').addTo(this._map)
         this._drawLayer = featureGroup().addTo(this._map);
-        this._map.on('click', res => {
-
-        })
+        // this._map.on('click', res => {
+        //
+        // })
         this.emit('load')
 
+    }
+    /**
+     * 按layerId获取图层
+     * @param layerId
+     */
+    getLayerById = (layerId: string) => {
+        return this._layerMap[layerId] ?? null
+    }
+
+
+    setLayerVisible = (layerId: string, visible: boolean) => {
+        if (visible) {
+            this.getLayerById(layerId)?.addTo(this._map)
+        } else {
+            this.getLayerById(layerId)?.remove()
+        }
     }
 
 
@@ -54,9 +75,31 @@ export class LeafletWrapper extends EventEmitter {
     }
 
     /*
-    * 添加mvt服务
+    * 添加geojson-vt
     * */
-    addMVTLayer = ({vectorTileLayerStyles, layerId, layerName, url}: ILeafletVTLayerOptions) => {
+    addGeoJsonVTLayer = ({fillColor, color, json, layerId, fillOpacity}: ILeafletJsonVTLayerOptions) => {
+        const geojsonStyle = {
+            fillColor,
+            color,
+            weight: 1,
+            opacity: 1,
+            fillOpacity
+        };
+
+        const options = {
+            maxZoom: 20,
+            tolerance: 3,
+            debug: 0,
+            style: geojsonStyle
+        };
+        this._layerMap[layerId] = L.geoJson.vt(json, options)
+        this._map?.addLayer(this._layerMap[layerId])
+    }
+
+    /*
+    * 添加mvt服务（L.vectorGrid作者很久没维护，现有bug，弃用）
+    * */
+    addMVTLayer = ({vectorTileLayerStyles, layerId, layerName, url}: ILeafletMVTLayerOptions) => {
         this._layerMap[layerId] = L.vectorGrid.protobuf(url, {
             rendererFactory: L.canvas.tile,
             tms: true,
@@ -87,7 +130,7 @@ export class LeafletWrapper extends EventEmitter {
                     icon: makerIcon
                 })
                 mapMarker.bindPopup('<a id="popup_' + pt.id + '">' + pt.count + '</a>',
-                    {closeButton:false,closeOnClick:true})
+                    {closeButton: false, closeOnClick: true})
                 mapMarker.on('click', (evt: Record<string, any>) => {
                     (this._map as Map).flyTo(evt.latlng, 16)
                     this.emit('markerClick', {pt, mapMarker})
@@ -102,15 +145,15 @@ export class LeafletWrapper extends EventEmitter {
     /**
      * CQL_FILTER请求wfs数据
      */
-    requestWFSData = async ({base, layerName, crs, cql_filter}: Record<string, any>) => {
-        const urlString = base + '/ows'
+    requestWFSData = async ({baseUrl, layerName, crs, cql_filter}: Record<string, any>) => {
+        const urlString = baseUrl + '/ows'
         const param: Record<string, any> = {
             service: 'WFS',
             version: '1.0.0',
             request: 'GetFeature',
             typeName: layerName,
             outputFormat: 'application/json',
-            maxFeatures: 3200,
+            maxFeatures: 1000000,
             srsName: crs,
         }
         if (cql_filter) param['CQL_FILTER'] = cql_filter

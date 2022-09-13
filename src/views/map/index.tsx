@@ -3,9 +3,10 @@ import './index.scss'
 import {Radio} from 'antd';
 import MapboxMapComponent from "@/views/map/MapboxMap";
 import LeafletMapComponent from "@/views/map/LeafletMap";
+import OpenlayersMap from "@/views/map/OpenlayersMap";
 
 const AppMap = () => {
-    const [value, setValue] = useState('leaflet');
+    const [value, setValue] = useState('openlayers');
     return <>
         <div className="app-main">
             <div className="app-top">
@@ -14,7 +15,7 @@ const AppMap = () => {
                              buttonStyle="solid">
                     <Radio.Button value="mapbox">mapbox</Radio.Button>
                     <Radio.Button value="leaflet">leaflet</Radio.Button>
-                    <Radio.Button value="openlayer">openlayer</Radio.Button>
+                    <Radio.Button value="openlayers">openlayers</Radio.Button>
                 </Radio.Group>
             </div>
             <div className="app-bottom">
@@ -23,6 +24,9 @@ const AppMap = () => {
                 }
                 {
                     value == 'leaflet' && <LeafletMapComponent/>
+                }
+                {
+                    value == 'openlayers' && <OpenlayersMap/>
                 }
 
 
