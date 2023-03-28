@@ -86,7 +86,7 @@ const LeafletMapComponent = () => {
     const geojsonVT = async () => {
         const res = await map.requestWFSData(
             {
-                baseUrl: 'http://124.221.84.208:8078/geoserver/cite/',
+                baseUrl: 'https://geoserver.shgeo.cn/geoserver/cite/',
                 layerName: 'cite:geo_residential',
                 crs: 'EPSG:4326'
             }
